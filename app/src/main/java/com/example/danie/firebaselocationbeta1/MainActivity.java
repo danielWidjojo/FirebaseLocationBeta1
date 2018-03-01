@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
     LocationManager locationManager;
     int locationPermission;
     LocationListener locationListener;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     String firstName="Test";
     String lastName="Wong";
     String deviceId="860000";
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -61,47 +62,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //reading data from firebase
-        DocumentReference docRef = db.collection("users").document(phoneNumber);
-        final String TAG="docRef";
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    // check whether document existed and not empty
-                    if (document.exists()&&document != null) {
-                        CollectionReference users = db.collection("users");
-                        // Trying to add user to firestore database
-                        Map<String, Object> data1 = new HashMap<>();
-                        data1.put("firstName", firstName);
-                        data1.put("lastName", lastName);
-                        //data1.put("modified", FieldValue.serverTimestamp());
-                        data1.put("createdAt", FieldValue.serverTimestamp());
-
-                        data1.put("locationShared",true);
-                        users.document(phoneNumber).update(data1);
-
-                        Log.d(TAG, "DocumentSnapshot data: " + task.getResult().getData());
-                    } else {
-                        CollectionReference users = db.collection("users");
-                        // Trying to add user to firestore database
-                        Map<String, Object> data1 = new HashMap<>();
-                        data1.put("firstName", firstName);
-                        data1.put("lastName", lastName);
-                        data1.put("modifiedAt", FieldValue.serverTimestamp());
-                        data1.put("createdAt", FieldValue.serverTimestamp());
-                        data1.put("deviceId", deviceId);
-                        data1.put("locationShared",true);
-                        users.document(phoneNumber).set(data1);
-
-                        Log.d(TAG, "No such document");
-                    }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });
 
 
         //accessing location of device
@@ -145,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         }else {
             ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},1);
         }
-
+        PhoneAuthentication phoneAuthentication=new PhoneAuthentication(this);
+        phoneAuthentication.setUpUser(phoneNumber,deviceId,firstName,lastName);
         // testing new interaction class
         Interaction interaction=new Interaction(phoneNumber,this);
         interaction.selfData();
