@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     String firstName="Test";
     String lastName="Wong";
     String deviceId="860000";
+    String uniqueId;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -107,10 +108,18 @@ public class MainActivity extends AppCompatActivity {
         }
         PhoneAuthentication phoneAuthentication=new PhoneAuthentication(this);
         phoneAuthentication.setUpUser(phoneNumber,deviceId,firstName,lastName);
-        // testing new interaction class
-        Interaction interaction=new Interaction(phoneNumber,this);
-        interaction.selfData();
-        interaction.connect(friendNumber);
+
+
+        uniqueId=phoneAuthentication.getUniqueId();
+        //interaction.selfData();
+        if(!uniqueId.isEmpty()){
+            // testing new interaction class
+            Interaction interaction=new Interaction(phoneNumber,uniqueId,this);
+            interaction.getUniqueId(friendNumber);
+            Log.i("UniqueId",uniqueId);
+            //interaction.connect(friendNumber);
+        }
+
         //interaction.createPersonalMeeting(friendNumber);
         /*
         for(int i=0;i<5;i++){

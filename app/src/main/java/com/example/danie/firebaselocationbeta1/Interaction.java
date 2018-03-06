@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -27,17 +28,18 @@ import java.util.Map;
 
 public class Interaction {
     String phoneNumber;
-
+    String uniqueId;
     Context context;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    public Interaction(String phone_number, Context context_){
+    public Interaction(String phone_number,String unique_id, Context context_){
         phoneNumber=phone_number;
+        uniqueId=unique_id;
         context=context_;
     }
     String TAG ="Interaction";
     public void selfData(){
 
-        final DocumentReference docRef2 = db.collection("interactions").document(phoneNumber);
+        final DocumentReference docRef2 = db.collection("interactions").document(uniqueId);
         //final String TAG="docRef";
         docRef2.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -56,6 +58,34 @@ public class Interaction {
                     }
                 } else {
                     Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+    public void getUniqueId(String phoneNumberAdd){
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        final CollectionReference userRef = db.collection("users");
+        // Checking whether user has existed by quering
+        userRef.whereEqualTo("phoneNumber",phoneNumberAdd).whereEqualTo("exist",true)
+                .limit(1)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()){
+                    // Checking whether task is empty
+                    // If not empty just update user data *for now
+                    //If empty than user did not exist
+                    if(!task.getResult().isEmpty()){
+                        for (DocumentSnapshot document : task.getResult()) {
+                            // Need to prevent the system for having the same phone number with more than one document id
+                            //Logging id of document
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+
+
+                        }
+
+                    }
                 }
             }
         });
